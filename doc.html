@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>啄木鸟二手家电供应商系统 - 业务需求文档</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif;background:#f8f9fa;color:#333;line-height:1.8}
+.container{max-width:960px;margin:0 auto;padding:40px 24px}
+h1{font-size:28px;text-align:center;margin-bottom:8px;color:#FF6B35}
+.subtitle{text-align:center;color:#999;font-size:14px;margin-bottom:40px}
+h2{font-size:22px;margin:40px 0 20px;padding-left:14px;border-left:4px solid #FF6B35;color:#333}
+h3{font-size:17px;margin:24px 0 12px;color:#555}
+.card{background:#fff;border-radius:12px;padding:28px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.card p,.card li{font-size:15px;color:#555;line-height:2}
+.card ul{padding-left:20px}
+.card ol{padding-left:20px}
+.highlight{background:#FFF3ED;border-left:3px solid #FF6B35;padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0;font-size:14px;color:#e65100}
+.tag{display:inline-block;background:#FF6B35;color:#fff;padding:2px 10px;border-radius:12px;font-size:12px;margin-right:6px}
+.mermaid{background:#fff;border-radius:12px;padding:24px;margin:20px 0;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow-x:auto}
+.demo-link{display:block;text-align:center;margin:30px auto;padding:16px 40px;background:#FF6B35;color:#fff;border-radius:12px;font-size:18px;font-weight:600;text-decoration:none;max-width:400px;box-shadow:0 4px 16px rgba(255,107,53,.3);transition:.2s}
+.demo-link:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(255,107,53,.4)}
+.demo-link span{font-size:13px;display:block;margin-top:4px;font-weight:400;opacity:.9}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14px}
+th,td{border:1px solid #e8e8e8;padding:10px 14px;text-align:left}
+th{background:#fafafa;font-weight:600;color:#333}
+.footer{text-align:center;color:#bbb;font-size:12px;margin-top:60px;padding:20px 0;border-top:1px solid #eee}
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🔧 啄木鸟二手家电供应商系统</h1>
+  <p class="subtitle">业务需求文档 v1.0 ｜ 2026年4月24日</p>
+
+  <!-- ========== 一、业务背景及目的 ========== -->
+  <h2>一、业务背景及目的</h2>
+  <div class="card">
+    <h3>1.1 业务背景</h3>
+    <p>啄木鸟维修平台目前正在开展<strong>二手空调、冰箱、洗衣机、电视</strong>销售业务。二手商品均来自线下供应商，由啄木鸟平台工程师代为销售。</p>
+    <p>当前面临的核心问题：</p>
+    <div class="highlight">
+      ⚠️ 二手供应商入驻平台后，不愿使用现有系统上架商品，原因是<strong>系统操作太繁琐复杂</strong>，导致供应商使用意愿低、商品上架效率差。
+    </div>
+    
+    <h3>1.2 项目目的</h3>
+    <ul>
+      <li><strong>提升系统使用体验</strong>：简化操作流程，让供应商"愿意用、用得顺"</li>
+      <li><strong>减少操作步骤</strong>：引入语音录入、铭牌AI识别等智能化手段，大幅减少手动输入</li>
+      <li><strong>降低时间成本</strong>：让供应商在最短时间内完成商品上架、配送管理、售后处理</li>
+    </ul>
+
+    <h3>1.3 核心业务模块</h3>
+    <table>
+      <tr><th>模块</th><th>功能</th><th>角色</th></tr>
+      <tr><td><span class="tag">商品管理</span></td><td>商品上架（语音+AI识别）、商品搜索、商品下架、详情查看</td><td>供应商</td></tr>
+      <tr><td><span class="tag">销售配送</span></td><td>查看待送装/已送装订单、联系客户、导航、完成送装</td><td>供应商</td></tr>
+      <tr><td><span class="tag">售后返修</span></td><td>查看待处理/已完成售后单、联系客户、导航、完成售后</td><td>供应商</td></tr>
+    </table>
+
+    <h3>1.4 创新亮点</h3>
+    <ul>
+      <li>🎤 <strong>语音录入</strong>：每个表单项均支持单项语音录入 + "长语音录品"一句话填充所有字段</li>
+      <li>🤖 <strong>AI铭牌识别</strong>：拍摄铭牌照自动调用豆包大模型识别型号、规格、能效等级、核心技术、尺寸</li>
+      <li>📄 <strong>详情页自动生成</strong>：铭牌参数 + 商品实拍图自动组合生成商品详情页</li>
+      <li>✅ <strong>智能校验</strong>：提交时自动校验标题规范（品牌+参数+类型）和价格合规（销售价≥结算价×2）</li>
+    </ul>
+  </div>
+
+  <!-- ========== 二、业务流程图 ========== -->
+  <h2>二、业务流程图</h2>
+
+  <h3>2.1 整体业务流程</h3>
+  <div class="mermaid">
+graph TB
+    A[供应商入驻平台] --> B[登录供应商系统]
+    B --> C[上架商品]
+    C --> D[啄木鸟工程师代卖]
+    D --> E{商品销售成功}
+    E --> F[自动生成配送订单]
+    F --> G[供应商与客户联系协商配送时间]
+    G --> H[供应商线下配送安装]
+    H --> I[系统内操作完成配送]
+    E --> J[客户使用中]
+    J --> K{质保期内出现问题}
+    K --> L[客户在啄木鸟下返修单]
+    L --> M[识别为二手家电销售单]
+    M --> N[自动生成供应商售后返修单]
+    N --> O[供应商与客户联系协商]
+    O --> P[供应商线下解决售后]
+    P --> Q[系统内操作完成售后]
+  </div>
+
+  <h3>2.2 商品上架流程</h3>
+  <div class="mermaid">
+graph TB
+    A[点击上架商品] --> B[进入上架页面]
+    B --> C{选择录入方式}
+    C -->|手动输入| D[逐项填写7项内容]
+    C -->|单项语音| E[每项语音录入]
+    C -->|长语音录品| F[一句话描述自动填充所有项]
+    D --> G[拍摄上传商品照片]
+    E --> G
+    F --> G
+    G --> H[拍摄铭牌照]
+    H --> I[豆包大模型识别铭牌参数]
+    I --> J[自动生成商品详情页]
+    J --> K[预览商品详情效果]
+    K --> L[提交上架]
+    L --> M{系统校验}
+    M -->|标题不含品牌+参数+类型| N[提示修改标题]
+    M -->|销售价 < 结算价×2| O[提示修改价格]
+    M -->|校验通过| P[上架成功]
+    N --> L
+    O --> L
+  </div>
+
+  <h3>2.3 销售配送流程</h3>
+  <div class="mermaid">
+graph TB
+    A[工程师销售成功] --> B[自动生成配送订单]
+    B --> C[供应商待送装列表新增记录]
+    C --> D[供应商查看订单详情]
+    D --> E[联系客户协商配送时间]
+    E --> F[导航至客户地址]
+    F --> G[线下完成配送安装]
+    G --> H[点击完成送装]
+    H --> I[待送装记录消失]
+    I --> J[已送装记录新增]
+  </div>
+
+  <h3>2.4 售后返修流程</h3>
+  <div class="mermaid">
+graph TB
+    A[客户发起返修] --> B[平台识别为二手家电订单]
+    B --> C[自动生成供应商售后返修单]
+    C --> D[供应商待处理列表新增记录]
+    D --> E[供应商查看售后详情]
+    E --> F[联系客户协商处理方案]
+    F --> G[线下解决售后问题]
+    G --> H[点击售后完成]
+    H --> I[待处理记录消失]
+    I --> J[已完成记录新增]
+  </div>
+
+  <!-- ========== 三、交互原型Demo ========== -->
+  <h2>三、交互原型Demo</h2>
+  <div class="card" style="text-align:center">
+    <p style="margin-bottom:8px">👇 点击下方按钮打开H5交互原型（请使用手机或浏览器模拟手机模式查看）</p>
+    <p style="font-size:13px;color:#999;margin-bottom:20px">Demo包含完整的商品管理、销售配送、售后返修三大模块交互操作</p>
+    <a class="demo-link" href="./index.html" target="_blank">
+      📱 打开交互原型Demo
+      <span>支持手机端浏览，建议使用手机扫码或直接点击</span>
+    </a>
+    <p style="font-size:13px;color:#999;margin-top:20px">
+      💡 <strong>Demo功能说明：</strong>默认包含空调、冰箱、洗衣机、电视四大品类商品数据，<br>
+      支持商品搜索、上架（含语音录入/长语音录品/铭牌识别模拟）、下架、<br>
+      配送完成、售后完成等全流程交互操作。
+    </p>
+  </div>
+
+  <div class="footer">
+    啄木鸟维修平台 · 二手家电供应商系统业务需求文档 · 2026年4月
+  </div>
+</div>
+
+<script>mermaid.initialize({startOnLoad:true,theme:'neutral',flowchart:{useMaxWidth:true,htmlLabels:true}});</script>
+</body>
+</html>
