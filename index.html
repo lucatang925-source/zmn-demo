@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>啄木鸟二手家电供应商系统</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#FF6B35;--primary-light:#FFF3ED;--bg:#F5F6FA;--white:#fff;--text:#333;--text2:#666;--text3:#999;--border:#E8E8E8;--success:#52C41A;--danger:#FF4D4F;--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','PingFang SC','Helvetica Neue',sans-serif;background:var(--bg);color:var(--text);max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+.header{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:100;background:var(--primary);color:#fff;padding:12px 16px;text-align:center;font-size:17px;font-weight:600}
+.main-tabs{position:fixed;top:44px;left:50%;transform:translateX(-50%);width:100%;max-width:430px;z-index:99;background:var(--white);display:flex;border-bottom:1px solid var(--border)}
+.main-tab{flex:1;text-align:center;padding:12px 0;font-size:14px;color:var(--text2);position:relative;cursor:pointer;transition:.2s}
+.main-tab.active{color:var(--primary);font-weight:600}
+.main-tab.active::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:30px;height:3px;background:var(--primary);border-radius:2px}
+.content{padding-top:92px;padding-bottom:20px;min-height:100vh}
+.tab-panel{display:none;padding:0 12px}
+.tab-panel.active{display:block}
+/* Search */
+.search-bar{display:flex;align-items:center;background:var(--white);border-radius:var(--radius);padding:8px 12px;margin:12px 0;box-shadow:0 1px 4px rgba(0,0,0,.05)}
+.search-bar input{flex:1;border:none;outline:none;font-size:14px;background:transparent}
+.search-bar .icon-search{width:20px;height:20px;margin-right:8px;color:var(--text3)}
+/* Product list */
+.product-card{background:var(--white);border-radius:var(--radius);padding:12px;margin-bottom:10px;display:flex;gap:12px;box-shadow:0 1px 4px rgba(0,0,0,.04);position:relative;cursor:pointer}
+.product-card img{width:100px;height:100px;border-radius:8px;object-fit:cover;background:#f0f0f0;flex-shrink:0}
+.product-info{flex:1;display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+.product-info .title{font-size:15px;font-weight:500;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.product-info .price{color:var(--primary);font-size:18px;font-weight:700}
+.product-info .price span{font-size:12px;font-weight:400}
+.btn-delist{position:absolute;right:12px;bottom:12px;padding:4px 12px;border:1px solid var(--danger);color:var(--danger);border-radius:16px;font-size:12px;background:transparent;cursor:pointer}
+/* FAB */
+.fab{position:fixed;bottom:30px;right:calc(50% - 195px);width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;border:none;font-size:24px;box-shadow:0 4px 12px rgba(255,107,53,.4);cursor:pointer;z-index:50;display:flex;align-items:center;justify-content:center}
+@media(max-width:430px){.fab{right:20px}}
+/* Sub tabs */
+.sub-tabs{display:flex;gap:0;background:var(--white);border-radius:var(--radius);margin:12px 0;overflow:hidden;border:1px solid var(--border)}
+.sub-tab{flex:1;text-align:center;padding:10px 0;font-size:13px;color:var(--text2);cursor:pointer;transition:.2s;position:relative}
+.sub-tab.active{background:var(--primary-light);color:var(--primary);font-weight:600}
+.sub-tab .badge{position:absolute;top:4px;right:20%;background:var(--danger);color:#fff;border-radius:10px;padding:0 6px;font-size:10px;min-width:18px;height:18px;line-height:18px}
+/* Order card */
+.order-card{background:var(--white);border-radius:var(--radius);padding:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.order-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.order-header .time{font-size:12px;color:var(--text3)}
+.order-body{display:flex;gap:10px;margin-bottom:10px}
+.order-body img{width:70px;height:70px;border-radius:8px;object-fit:cover;background:#f0f0f0;flex-shrink:0}
+.order-detail{flex:1;font-size:13px;line-height:1.8;color:var(--text2)}
+.order-detail .name{font-size:14px;color:var(--text);font-weight:500}
+.order-detail .price-tag{color:var(--primary);font-weight:600}
+.order-actions{display:flex;gap:8px;justify-content:flex-end}
+.order-actions button{padding:6px 16px;border-radius:20px;font-size:13px;cursor:pointer;border:none}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-outline{background:transparent;border:1px solid var(--primary)!important;color:var(--primary)}
+.btn-outline-gray{background:transparent;border:1px solid var(--border)!important;color:var(--text2)}
+/* Publish page */
+.page-publish{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;background:var(--bg);z-index:200;display:none;flex-direction:column}
+.page-publish.show{display:flex}
+.pub-header{background:var(--primary);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.pub-header .back{font-size:20px;cursor:pointer}
+.pub-body{flex:1;overflow-y:auto;padding:12px 16px 100px}
+.form-group{background:var(--white);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.form-label{font-size:13px;color:var(--text2);margin-bottom:6px;display:flex;align-items:center;gap:4px}
+.form-label .req{color:var(--danger)}
+.form-row{display:flex;align-items:center;gap:8px}
+.form-row input,.form-row select{flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;outline:none;background:var(--white)}
+.form-row input:focus{border-color:var(--primary)}
+.btn-voice{width:36px;height:36px;border-radius:50%;background:var(--primary-light);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px}
+.btn-voice:active{background:var(--primary);color:#fff}
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+.chip{padding:6px 14px;border-radius:20px;font-size:13px;border:1px solid var(--border);cursor:pointer;background:var(--white);color:var(--text2);transition:.2s}
+.chip.selected{background:var(--primary);color:#fff;border-color:var(--primary)}
+/* Photo upload */
+.photo-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:8px}
+.photo-slot{aspect-ratio:1;border-radius:8px;border:1.5px dashed var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;color:var(--text3);cursor:pointer;position:relative;overflow:hidden;background:var(--white)}
+.photo-slot.required{border-color:var(--primary);color:var(--primary)}
+.photo-slot .icon{font-size:24px;margin-bottom:2px}
+.photo-slot.has-photo{border-style:solid;border-color:var(--success)}
+.photo-slot.has-photo img{width:100%;height:100%;object-fit:cover;position:absolute}
+/* Preview */
+.preview-section{background:var(--white);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.preview-section h4{font-size:14px;margin-bottom:10px;color:var(--text)}
+.preview-params{font-size:13px;line-height:2;color:var(--text2)}
+.preview-params .param-row{display:flex;border-bottom:1px solid #f5f5f5;padding:4px 0}
+.preview-params .param-label{width:90px;color:var(--text3);flex-shrink:0}
+/* Bottom bar */
+.pub-footer{position:absolute;bottom:0;left:0;right:0;padding:12px 16px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:10px}
+.pub-footer button{flex:1;padding:12px;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;border:none}
+.btn-preview-pub{background:var(--primary-light);color:var(--primary)}
+.btn-submit-pub{background:var(--primary);color:#fff}
+/* Long voice btn */
+.long-voice-btn{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 24px;border-radius:24px;background:var(--primary);color:#fff;border:none;font-size:14px;font-weight:500;box-shadow:0 4px 12px rgba(255,107,53,.4);cursor:pointer;z-index:210;display:flex;align-items:center;gap:6px;white-space:nowrap}
+/* Detail page */
+.page-detail{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;background:var(--bg);z-index:200;display:none;flex-direction:column}
+.page-detail.show{display:flex}
+.detail-body{flex:1;overflow-y:auto;padding-bottom:20px}
+.detail-img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#f0f0f0}
+.detail-info{padding:16px;background:var(--white)}
+.detail-info .title{font-size:17px;font-weight:600;line-height:1.4;margin-bottom:8px}
+.detail-info .price{color:var(--primary);font-size:22px;font-weight:700;margin-bottom:4px}
+.detail-info .meta{font-size:12px;color:var(--text3);display:flex;gap:12px}
+.detail-section{margin-top:10px;padding:16px;background:var(--white)}
+.detail-section h4{font-size:15px;margin-bottom:12px}
+.detail-gallery{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.detail-gallery img{width:100%;border-radius:8px;aspect-ratio:1;object-fit:cover;background:#f0f0f0}
+/* Toast */
+.toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.75);color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:999;display:none;text-align:center}
+.toast.show{display:block;animation:fadeInOut 2s ease}
+@keyframes fadeInOut{0%{opacity:0}15%{opacity:1}85%{opacity:1}100%{opacity:0}}
+/* Modal */
+.modal-mask{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center}
+.modal-mask.show{display:flex}
+.modal{background:var(--white);border-radius:16px;width:85%;max-width:360px;padding:24px 20px;text-align:center}
+.modal h3{font-size:16px;margin-bottom:8px}
+.modal p{font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6}
+.modal .modal-btns{display:flex;gap:10px}
+.modal .modal-btns button{flex:1;padding:10px;border-radius:8px;font-size:14px;cursor:pointer;border:none}
+/* Voice modal */
+.voice-modal{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:var(--white);border-radius:20px 20px 0 0;padding:30px 20px 40px;z-index:310;display:none;text-align:center}
+.voice-modal.show{display:block}
+.voice-wave{width:60px;height:60px;border-radius:50%;background:var(--primary);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.8}}
+.voice-wave svg{width:28px;height:28px;fill:#fff}
+.voice-tip{font-size:14px;color:var(--text2);margin-bottom:16px}
+.voice-cancel{padding:10px 30px;border:1px solid var(--border);border-radius:20px;background:transparent;font-size:14px;color:var(--text2);cursor:pointer}
+/* Empty */
+.empty{text-align:center;padding:60px 20px;color:var(--text3);font-size:14px}
+.empty .icon{font-size:48px;margin-bottom:12px}
+/* Preview page */
+.page-preview{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;height:100%;background:var(--bg);z-index:250;display:none;flex-direction:column}
+.page-preview.show{display:flex}
+</style>
+</head>
+<body>
+
+<div class="header">啄木鸟二手家电·供应商系统</div>
+<div class="main-tabs">
+  <div class="main-tab active" data-tab="goods" onclick="switchMainTab('goods')">商品管理</div>
+  <div class="main-tab" data-tab="delivery" onclick="switchMainTab('delivery')">销售配送</div>
+  <div class="main-tab" data-tab="repair" onclick="switchMainTab('repair')">售后返修</div>
+</div>
+
+<div class="content">
+  <!-- 商品管理 -->
+  <div id="panel-goods" class="tab-panel active">
+    <div class="search-bar">
+      <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="搜索商品名称..." oninput="filterGoods(this.value)">
+    </div>
+    <div id="goods-list"></div>
+  </div>
+
+  <!-- 销售配送 -->
+  <div id="panel-delivery" class="tab-panel">
+    <div class="sub-tabs">
+      <div class="sub-tab active" data-sub="delivery-pending" onclick="switchSubTab('delivery',this,'delivery-pending')">待送装 <span class="badge" id="badge-dp"></span></div>
+      <div class="sub-tab" data-sub="delivery-done" onclick="switchSubTab('delivery',this,'delivery-done')">已送装 <span class="badge" id="badge-dd"></span></div>
+    </div>
+    <div class="search-bar">
+      <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="搜索商品/地址/电话/称呼..." oninput="filterOrders('delivery',this.value)">
+    </div>
+    <div id="delivery-pending" class="sub-panel"></div>
+    <div id="delivery-done" class="sub-panel" style="display:none"></div>
+  </div>
+
+  <!-- 售后返修 -->
+  <div id="panel-repair" class="tab-panel">
+    <div class="sub-tabs">
+      <div class="sub-tab active" data-sub="repair-pending" onclick="switchSubTab('repair',this,'repair-pending')">待处理 <span class="badge" id="badge-rp"></span></div>
+      <div class="sub-tab" data-sub="repair-done" onclick="switchSubTab('repair',this,'repair-done')">已完成 <span class="badge" id="badge-rd"></span></div>
+    </div>
+    <div class="search-bar">
+      <svg class="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" placeholder="搜索商品/地址/电话/称呼..." oninput="filterOrders('repair',this.value)">
+    </div>
+    <div id="repair-pending" class="sub-panel"></div>
+    <div id="repair-done" class="sub-panel" style="display:none"></div>
+  </div>
+</div>
+
+<!-- FAB -->
+<div class="fab" id="fab-add" onclick="openPublish()">＋</div>
+
+<!-- 上架页面 -->
+<div class="page-publish" id="page-publish">
+  <div class="pub-header">
+    <span class="back" onclick="closePublish()">←</span>
+    <span>上架商品</span>
+  </div>
+  <div class="pub-body">
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 商品标题 <span style="font-size:11px;color:var(--text3)">（品牌+核心参数+类型）</span></div>
+      <div class="form-row">
+        <input type="text" id="pub-title" placeholder="如：小天鹅8kg波轮洗衣机">
+        <button class="btn-voice" onclick="showVoice('pub-title')">🎤</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 结算价格（元）</div>
+      <div class="form-row">
+        <input type="number" id="pub-settle" placeholder="供应商结算价">
+        <button class="btn-voice" onclick="showVoice('pub-settle')">🎤</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 销售价格（元）<span style="font-size:11px;color:var(--text3)">（需≥结算价×2）</span></div>
+      <div class="form-row">
+        <input type="number" id="pub-sale" placeholder="平台销售价">
+        <button class="btn-voice" onclick="showVoice('pub-sale')">🎤</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 送装区域</div>
+      <div class="form-row" style="margin-bottom:4px">
+        <button class="btn-voice" onclick="showVoice('pub-area')" style="margin-left:auto">🎤</button>
+      </div>
+      <div class="chips" id="area-chips"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 售后时长</div>
+      <div class="form-row" style="margin-bottom:4px">
+        <button class="btn-voice" onclick="showVoice('pub-warranty')" style="margin-left:auto">🎤</button>
+      </div>
+      <div class="chips" id="warranty-chips"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 商品照片</div>
+      <div class="photo-grid" id="photo-grid"></div>
+    </div>
+    <div class="form-group">
+      <div class="form-label"><span class="req">*</span> 商品详情页 <span style="font-size:11px;color:var(--text3)">（自动生成：铭牌参数+商品图）</span></div>
+      <div id="auto-detail-preview" class="preview-section" style="background:#fafafa;min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:13px">
+        拍摄铭牌照后自动识别生成
+      </div>
+    </div>
+  </div>
+  <button class="long-voice-btn" id="long-voice-btn" onclick="showLongVoice()">🎤 长语音录品</button>
+  <div class="pub-footer">
+    <button class="btn-preview-pub" onclick="previewProduct()">预览</button>
+    <button class="btn-submit-pub" onclick="submitProduct()">提交上架</button>
+  </div>
+</div>
+
+<!-- 商品详情页 -->
+<div class="page-detail" id="page-detail">
+  <div class="pub-header">
+    <span class="back" onclick="closeDetail()">←</span>
+    <span>商品详情</span>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- 预览页 -->
+<div class="page-preview" id="page-preview">
+  <div class="pub-header">
+    <span class="back" onclick="closePreview()">←</span>
+    <span>商品详情预览</span>
+  </div>
+  <div class="detail-body" id="preview-body"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- 确认弹窗 -->
+<div class="modal-mask" id="modal-confirm">
+  <div class="modal">
+    <h3 id="modal-title">确认操作</h3>
+    <p id="modal-msg">确定要执行此操作吗？</p>
+    <div class="modal-btns">
+      <button class="btn-outline-gray" onclick="closeModal()">取消</button>
+      <button class="btn-primary" id="modal-ok" onclick="closeModal()">确定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 语音弹窗 -->
+<div class="modal-mask" id="voice-mask" onclick="closeVoiceModal()">
+  <div class="voice-modal" id="voice-modal" onclick="event.stopPropagation()">
+    <div class="voice-wave"><svg viewBox="0 0 24 24"><path d="M12 1a4 4 0 0 0-4 4v6a4 4 0 0 0 8 0V5a4 4 0 0 0-4-4zm7 10a7 7 0 0 1-14 0H3a9 9 0 0 0 8 8.94V23h2v-3.06A9 9 0 0 0 21 11z"/></svg></div>
+    <div class="voice-tip" id="voice-tip">正在录音，请说话...</div>
+    <button class="voice-cancel" onclick="closeVoiceModal()">取消录音</button>
+  </div>
+</div>
+
+<script>
+// ==================== 数据 ====================
+const AREAS = ['全城','渝中区','江北区','南岸区','沙坪坝区','九龙坡区','大渡口区','巴南区','北碚区','渝北区','两江新区'];
+const WARRANTIES = ['1个月','3个月','6个月','1年'];
+
+const defaultPhotos = {
+  ac: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e8f4fd" width="200" height="200"/><text x="50%" y="45%" text-anchor="middle" fill="%234a90d9" font-size="40">❄️</text><text x="50%" y="65%" text-anchor="middle" fill="%234a90d9" font-size="14">空调</text></svg>',
+  fridge: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23e8f0fd" width="200" height="200"/><text x="50%" y="45%" text-anchor="middle" fill="%234a7ad9" font-size="40">🧊</text><text x="50%" y="65%" text-anchor="middle" fill="%234a7ad9" font-size="14">冰箱</text></svg>',
+  washer: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23edf8ed" width="200" height="200"/><text x="50%" y="45%" text-anchor="middle" fill="%235aaa5a" font-size="40">🫧</text><text x="50%" y="65%" text-anchor="middle" fill="%235aaa5a" font-size="14">洗衣机</text></svg>',
+  tv: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect fill="%23f5edf8" width="200" height="200"/><text x="50%" y="45%" text-anchor="middle" fill="%239a5ab5" font-size="40">📺</text><text x="50%" y="65%" text-anchor="middle" fill="%239a5ab5" font-size="14">电视</text></svg>'
+};
+
+let goodsList = [
+  {id:1,title:'美的1.5匹变频冷暖空调',settle:800,sale:1800,area:['渝中区','江北区','南岸区'],warranty:'3个月',img:defaultPhotos.ac,params:{model:'KFR-35GW/N8MJA3',spec:'1.5匹',energy:'一级能效',highlight:'全直流变频，自清洁',size:'848×292×200mm'}},
+  {id:2,title:'海尔210L三门风冷冰箱',settle:600,sale:1380,area:['全城'],warranty:'6个月',img:defaultPhotos.fridge,params:{model:'BCD-210WDPG',spec:'210升',energy:'二级能效',highlight:'风冷无霜，中门软冷冻',size:'590×599×1694mm'}},
+  {id:3,title:'小天鹅8kg波轮全自动洗衣机',settle:350,sale:780,area:['巴南区','九龙坡区','大渡口区'],warranty:'3个月',img:defaultPhotos.washer,params:{model:'TB80V23H',spec:'8公斤',energy:'一级能效',highlight:'专利免清洗技术，水魔方',size:'550×560×920mm'}},
+  {id:4,title:'TCL 55英寸4K液晶电视',settle:500,sale:1100,area:['渝北区','两江新区','江北区'],warranty:'1个月',img:defaultPhotos.tv,params:{model:'55V6E',spec:'55英寸',energy:'三级能效',highlight:'4K超高清，HDR10，杜比音效',size:'1232×770×235mm'}},
+  {id:5,title:'格力3匹柜式冷暖空调',settle:1500,sale:3200,area:['全城'],warranty:'6个月',img:defaultPhotos.ac,params:{model:'KFR-72LW/NhGb3B',spec:'3匹',energy:'一级能效',highlight:'蒸发器自洁，56°C高温杀菌',size:'540×380×1700mm'}},
+  {id:6,title:'美的500L对开门冰箱',settle:1200,sale:2600,area:['沙坪坝区','北碚区'],warranty:'1年',img:defaultPhotos.fridge,params:{model:'BCD-500WKPZM(E)',spec:'500升',energy:'一级能效',highlight:'风冷无霜，铂金净味',size:'908×640×1775mm'}},
+  {id:7,title:'海尔10kg滚筒洗衣机',settle:500,sale:1200,area:['全城'],warranty:'6个月',img:defaultPhotos.washer,params:{model:'EG100B108S',spec:'10公斤',energy:'一级能效',highlight:'BLDC变频电机，高温除菌',size:'595×530×850mm'}},
+  {id:8,title:'小米65英寸全面屏电视',settle:800,sale:1800,area:['渝中区','南岸区'],warranty:'3个月',img:defaultPhotos.tv,params:{model:'L65M5-AZ',spec:'65英寸',energy:'二级能效',highlight:'4K HDR，内置小爱同学',size:'1449×905×281mm'}}
+];
+let nextId = 9;
+
+let deliveryPending = [
+  {id:101,product:'美的1.5匹变频冷暖空调',settle:800,img:defaultPhotos.ac,address:'重庆市渝中区解放碑步行街88号',customer:'张先生',phone:'138****1234',time:'2026-04-20 14:30'},
+  {id:102,product:'小天鹅8kg波轮全自动洗衣机',settle:350,img:defaultPhotos.washer,address:'重庆市巴南区龙洲湾街道万达广场旁',customer:'李女士',phone:'159****5678',time:'2026-04-21 09:15'},
+  {id:103,product:'TCL 55英寸4K液晶电视',settle:500,img:defaultPhotos.tv,address:'重庆市渝北区金开大道西段力帆中心',customer:'王先生',phone:'177****9012',time:'2026-04-22 16:00'}
+];
+let deliveryDone = [
+  {id:104,product:'海尔210L三门风冷冰箱',settle:600,img:defaultPhotos.fridge,address:'重庆市江北区观音桥步行街12号',customer:'赵女士',phone:'133****3456',time:'2026-04-18 10:00'}
+];
+
+let repairPending = [
+  {id:201,product:'格力3匹柜式冷暖空调',settle:1500,img:defaultPhotos.ac,address:'重庆市沙坪坝区大学城熙街5号',customer:'刘先生',phone:'186****7890',time:'2026-04-19 11:30'},
+  {id:202,product:'海尔10kg滚筒洗衣机',settle:500,img:defaultPhotos.washer,address:'重庆市九龙坡区杨家坪步行街9号',customer:'陈女士',phone:'152****2345',time:'2026-04-22 08:45'}
+];
+let repairDone = [
+  {id:203,product:'小米65英寸全面屏电视',settle:800,img:defaultPhotos.tv,address:'重庆市南岸区南坪万达广场3栋',customer:'周先生',phone:'189****6789',time:'2026-04-15 14:20'}
+];
+
+// ==================== 主标签页 ====================
+function switchMainTab(tab) {
+  document.querySelectorAll('.main-tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab));
+  document.getElementById('fab-add').style.display = tab === 'goods' ? 'flex' : 'none';
+  if (tab === 'delivery') renderDelivery();
+  if (tab === 'repair') renderRepair();
+}
+
+// ==================== 商品管理 ====================
+function renderGoods(filter = '') {
+  const list = goodsList.filter(g => !filter || g.title.includes(filter));
+  const el = document.getElementById('goods-list');
+  if (!list.length) { el.innerHTML = '<div class="empty"><div class="icon">📦</div>暂无商品</div>'; return; }
+  el.innerHTML = list.map(g => `
+    <div class="product-card" onclick="openDetail(${g.id})">
+      <img src="${g.img}" alt="">
+      <div class="product-info">
+        <div class="title">${g.title}</div>
+        <div class="price">¥${g.sale} <span>结算价 ¥${g.settle}</span></div>
+      </div>
+      <button class="btn-delist" onclick="event.stopPropagation();delistProduct(${g.id})">下架</button>
+    </div>
+  `).join('');
+}
+function filterGoods(v) { renderGoods(v); }
+
+function delistProduct(id) {
+  showConfirm('下架商品', '确定要下架此商品吗？', () => {
+    goodsList = goodsList.filter(g => g.id !== id);
+    renderGoods();
+    showToast('下架成功');
+  });
+}
+
+function openDetail(id) {
+  const g = goodsList.find(x => x.id === id);
+  if (!g) return;
+  renderDetailContent(document.getElementById('detail-body'), g);
+  document.getElementById('page-detail').classList.add('show');
+}
+function closeDetail() { document.getElementById('page-detail').classList.remove('show'); }
+
+function renderDetailContent(container, g) {
+  container.innerHTML = `
+    <img class="detail-img" src="${g.img}" alt="">
+    <div class="detail-info">
+      <div class="price">¥${g.sale}</div>
+      <div class="title">${g.title}</div>
+      <div class="meta"><span>结算价 ¥${g.settle}</span><span>售后 ${g.warranty}</span><span>送装 ${g.area.join('、')}</span></div>
+    </div>
+    <div class="detail-section">
+      <h4>📋 铭牌参数</h4>
+      <div class="preview-params">
+        ${g.params ? `
+        <div class="param-row"><span class="param-label">型号</span>${g.params.model}</div>
+        <div class="param-row"><span class="param-label">规格</span>${g.params.spec}</div>
+        <div class="param-row"><span class="param-label">能效等级</span>${g.params.energy}</div>
+        <div class="param-row"><span class="param-label">核心亮点</span>${g.params.highlight}</div>
+        <div class="param-row"><span class="param-label">长宽高</span>${g.params.size}</div>
+        ` : '<div style="color:var(--text3)">暂无铭牌参数</div>'}
+      </div>
+    </div>
+    <div class="detail-section">
+      <h4>📷 商品实拍</h4>
+      <div class="detail-gallery">
+        <img src="${g.img}" alt="正面图">
+        <img src="${g.img}" alt="铭牌照">
+      </div>
+    </div>`;
+}
+
+// ==================== 上架 ====================
+let selectedAreas = [];
+let selectedWarranty = '';
+let photoSlots = [{label:'正面图',required:true,has:false},{label:'铭牌照',required:true,has:false},{label:'内部图',required:false,has:false},{label:'侧面图',required:false,has:false}];
+
+function openPublish() {
+  document.getElementById('page-publish').classList.add('show');
+  document.getElementById('pub-title').value = '';
+  document.getElementById('pub-settle').value = '';
+  document.getElementById('pub-sale').value = '';
+  selectedAreas = [];
+  selectedWarranty = '';
+  photoSlots.forEach(p => p.has = false);
+  renderAreaChips();
+  renderWarrantyChips();
+  renderPhotoGrid();
+  document.getElementById('auto-detail-preview').innerHTML = '<span style="color:var(--text3)">拍摄铭牌照后自动识别生成</span>';
+}
+function closePublish() { document.getElementById('page-publish').classList.remove('show'); }
+
+function renderAreaChips() {
+  document.getElementById('area-chips').innerHTML = AREAS.map(a => `<span class="chip ${selectedAreas.includes(a)?'selected':''}" onclick="toggleArea('${a}')">${a}</span>`).join('');
+}
+function toggleArea(a) {
+  if (a === '全城') { selectedAreas = selectedAreas.includes('全城') ? [] : ['全城']; }
+  else { selectedAreas = selectedAreas.filter(x => x !== '全城'); const i = selectedAreas.indexOf(a); i >= 0 ? selectedAreas.splice(i,1) : selectedAreas.push(a); }
+  renderAreaChips();
+}
+
+function renderWarrantyChips() {
+  document.getElementById('warranty-chips').innerHTML = WARRANTIES.map(w => `<span class="chip ${selectedWarranty===w?'selected':''}" onclick="selectWarranty('${w}')">${w}</span>`).join('');
+}
+function selectWarranty(w) { selectedWarranty = w; renderWarrantyChips(); }
+
+function renderPhotoGrid() {
+  document.getElementById('photo-grid').innerHTML = photoSlots.map((p,i) => `
+    <div class="photo-slot ${p.required?'required':''} ${p.has?'has-photo':''}" onclick="takePhoto(${i})">
+      ${p.has ? '<img src="'+defaultPhotos.ac+'">' : '<div class="icon">📷</div>'}
+      <span>${p.label}</span>${p.required?'<span style="color:var(--danger);font-size:10px">必传</span>':''}
+    </div>
+  `).join('');
+}
+
+function takePhoto(index) {
+  photoSlots[index].has = true;
+  renderPhotoGrid();
+  if (index === 1) { // 铭牌照
+    setTimeout(() => {
+      showToast('铭牌识别中...');
+      setTimeout(() => {
+        document.getElementById('auto-detail-preview').innerHTML = `
+          <div class="preview-params">
+            <div style="font-weight:600;margin-bottom:8px;color:var(--text)">✅ 铭牌识别完成</div>
+            <div class="param-row"><span class="param-label">型号</span>自动识别中...</div>
+            <div class="param-row"><span class="param-label">规格参数</span>自动识别中...</div>
+            <div class="param-row"><span class="param-label">能效等级</span>自动识别中...</div>
+            <div class="param-row"><span class="param-label">核心亮点</span>自动识别中...</div>
+            <div class="param-row"><span class="param-label">长宽高</span>自动识别中...</div>
+          </div>`;
+        setTimeout(() => {
+          document.getElementById('auto-detail-preview').innerHTML = `
+            <div class="preview-params">
+              <div style="font-weight:600;margin-bottom:8px;color:var(--success)">✅ 铭牌识别完成</div>
+              <div class="param-row"><span class="param-label">型号</span>XQB80-V23H</div>
+              <div class="param-row"><span class="param-label">规格参数</span>8公斤</div>
+              <div class="param-row"><span class="param-label">能效等级</span>一级能效</div>
+              <div class="param-row"><span class="param-label">核心亮点</span>免清洗技术，水魔方</div>
+              <div class="param-row"><span class="param-label">长宽高</span>550×560×920mm</div>
+            </div>`;
+        }, 1200);
+      }, 800);
+    }, 300);
+  }
+}
+
+function previewProduct() {
+  const t = document.getElementById('pub-title').value;
+  const settle = document.getElementById('pub-settle').value;
+  const sale = document.getElementById('pub-sale').value;
+  if (!t) { showToast('请填写商品标题'); return; }
+  const g = {title:t, sale:sale||'--', settle:settle||'--', warranty:selectedWarranty||'--', area:selectedAreas.length?selectedAreas:['--'], img:defaultPhotos.washer, params:{model:'XQB80-V23H',spec:'8公斤',energy:'一级能效',highlight:'免清洗技术，水魔方',size:'550×560×920mm'}};
+  renderDetailContent(document.getElementById('preview-body'), g);
+  document.getElementById('page-preview').classList.add('show');
+}
+function closePreview() { document.getElementById('page-preview').classList.remove('show'); }
+
+function submitProduct() {
+  const t = document.getElementById('pub-title').value.trim();
+  const settle = Number(document.getElementById('pub-settle').value);
+  const sale = Number(document.getElementById('pub-sale').value);
+  if (!t || !settle || !sale || !selectedAreas.length || !selectedWarranty) { showToast('请完成所有必填项'); return; }
+  if (!photoSlots[0].has || !photoSlots[1].has) { showToast('请上传正面图和铭牌照'); return; }
+  // 校验标题
+  const hasBrand = /(美的|格力|海尔|小天鹅|TCL|小米|海信|奥克斯|志高|长虹|创维|松下|西门子|博世)/i.test(t);
+  const hasType = /(空调|冰箱|洗衣机|电视)/i.test(t);
+  if (!hasBrand || !hasType) { showToast('商品标题需包含品牌+核心参数+类型'); return; }
+  if (sale < settle * 2) { showToast('销售价格需≥结算价的2倍'); return; }
+  const imgs = [defaultPhotos.ac, defaultPhotos.fridge, defaultPhotos.washer, defaultPhotos.tv];
+  const typeMap = {'空调':0,'冰箱':1,'洗衣机':2,'电视':3};
+  let imgIdx = 2;
+  for (const [k,v] of Object.entries(typeMap)) { if (t.includes(k)) { imgIdx = v; break; } }
+  goodsList.unshift({id:nextId++, title:t, settle, sale, area:selectedAreas, warranty:selectedWarranty, img:Object.values(defaultPhotos)[imgIdx], params:{model:'XQB80-V23H',spec:'识别中',energy:'一级能效',highlight:'自动识别',size:'--'}});
+  closePublish();
+  renderGoods();
+  showToast('🎉 上架成功！');
+}
+
+// ==================== 语音 ====================
+let voiceTarget = '';
+function showVoice(target) {
+  voiceTarget = target;
+  document.getElementById('voice-tip').textContent = '正在录音，请说话...';
+  document.getElementById('voice-mask').classList.add('show');
+  document.getElementById('voice-modal').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('voice-tip').textContent = '识别完成';
+    setTimeout(() => {
+      closeVoiceModal();
+      if (target === 'pub-title') document.getElementById('pub-title').value = '小天鹅8kg波轮洗衣机';
+      if (target === 'pub-settle') document.getElementById('pub-settle').value = '200';
+      if (target === 'pub-sale') document.getElementById('pub-sale').value = '500';
+      if (target === 'pub-area') { selectedAreas = ['巴南区']; renderAreaChips(); }
+      if (target === 'pub-warranty') { selectedWarranty = '3个月'; renderWarrantyChips(); }
+      showToast('语音识别成功');
+    }, 500);
+  }, 1500);
+}
+function closeVoiceModal() {
+  document.getElementById('voice-mask').classList.remove('show');
+  document.getElementById('voice-modal').classList.remove('show');
+}
+
+function showLongVoice() {
+  document.getElementById('voice-tip').textContent = '长语音录入中，请完整描述商品信息...';
+  document.getElementById('voice-mask').classList.add('show');
+  document.getElementById('voice-modal').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('voice-tip').textContent = '识别中...';
+    setTimeout(() => {
+      closeVoiceModal();
+      document.getElementById('pub-title').value = '小天鹅8kg波轮洗衣机';
+      document.getElementById('pub-settle').value = '200';
+      document.getElementById('pub-sale').value = '500';
+      selectedAreas = ['巴南区']; renderAreaChips();
+      selectedWarranty = '3个月'; renderWarrantyChips();
+      showToast('长语音识别成功，已自动填充');
+    }, 800);
+  }, 2000);
+}
+
+// ==================== 销售配送 ====================
+let deliverySubTab = 'delivery-pending';
+function renderDelivery(filter = '') {
+  renderOrderList('delivery-pending', deliveryPending, filter, 'delivery');
+  renderOrderList('delivery-done', deliveryDone, filter, 'delivery');
+  document.getElementById('badge-dp').textContent = deliveryPending.length || '';
+  document.getElementById('badge-dd').textContent = deliveryDone.length || '';
+}
+function switchSubTab(type, el, sub) {
+  el.parentElement.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  if (type === 'delivery') {
+    deliverySubTab = sub;
+    document.getElementById('delivery-pending').style.display = sub === 'delivery-pending' ? '' : 'none';
+    document.getElementById('delivery-done').style.display = sub === 'delivery-done' ? '' : 'none';
+  } else {
+    document.getElementById('repair-pending').style.display = sub === 'repair-pending' ? '' : 'none';
+    document.getElementById('repair-done').style.display = sub === 'repair-done' ? '' : 'none';
+  }
+}
+
+function renderOrderList(containerId, list, filter = '', type) {
+  const f = filter.trim();
+  const filtered = list.filter(o => !f || o.product.includes(f) || o.address.includes(f) || o.phone.includes(f) || o.customer.includes(f));
+  const isPending = containerId.includes('pending');
+  const el = document.getElementById(containerId);
+  if (!filtered.length) { el.innerHTML = '<div class="empty"><div class="icon">📋</div>暂无记录</div>'; return; }
+  const actionLabel = type === 'delivery' ? (isPending ? '完成送装' : '') : (isPending ? '售后完成' : '');
+  el.innerHTML = filtered.map(o => `
+    <div class="order-card">
+      <div class="order-header"><span style="font-weight:500">${isPending ? (type==='delivery'?'待送装':'待处理') : (type==='delivery'?'已送装':'已完成')}</span><span class="time">${o.time}</span></div>
+      <div class="order-body">
+        <img src="${o.img}" alt="">
+        <div class="order-detail">
+          <div class="name">${o.product}</div>
+          <div class="price-tag">结算价 ¥${o.settle}</div>
+          <div>📍 ${o.address}</div>
+          <div>👤 ${o.customer} ${o.phone}</div>
+        </div>
+      </div>
+      <div class="order-actions">
+        <button class="btn-outline" onclick="callCustomer('${o.phone}')">📞 联系客户</button>
+        <button class="btn-outline" onclick="navigateTo('${o.address}')">🧭 导航</button>
+        ${isPending ? `<button class="btn-primary" onclick="completeOrder('${type}',${o.id})">${actionLabel}</button>` : ''}
+      </div>
+    </div>
+  `).join('');
+}
+
+function filterOrders(type, v) {
+  if (type === 'delivery') renderDelivery(v);
+  else renderRepair(v);
+}
+
+function completeOrder(type, id) {
+  const label = type === 'delivery' ? '完成送装' : '售后完成';
+  showConfirm(label, `确定${label}吗？`, () => {
+    if (type === 'delivery') {
+      const idx = deliveryPending.findIndex(o => o.id === id);
+      if (idx >= 0) { const [item] = deliveryPending.splice(idx, 1); deliveryDone.unshift(item); }
+      renderDelivery();
+    } else {
+      const idx = repairPending.findIndex(o => o.id === id);
+      if (idx >= 0) { const [item] = repairPending.splice(idx, 1); repairDone.unshift(item); }
+      renderRepair();
+    }
+    showToast('操作成功');
+  });
+}
+
+function callCustomer(phone) { showToast('正在呼叫 ' + phone); }
+function navigateTo(addr) { showToast('正在导航至 ' + addr.substring(0,15) + '...'); }
+
+// ==================== 售后返修 ====================
+function renderRepair(filter = '') {
+  renderOrderList('repair-pending', repairPending, filter, 'repair');
+  renderOrderList('repair-done', repairDone, filter, 'repair');
+  document.getElementById('badge-rp').textContent = repairPending.length || '';
+  document.getElementById('badge-rd').textContent = repairDone.length || '';
+}
+
+// ==================== 通用 ====================
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('show');
+  void t.offsetWidth;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function showConfirm(title, msg, onOk) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('modal-confirm').classList.add('show');
+  document.getElementById('modal-ok').onclick = () => { closeModal(); onOk(); };
+}
+function closeModal() { document.getElementById('modal-confirm').classList.remove('show'); }
+
+// Init
+renderGoods();
+renderDelivery();
+renderRepair();
+</script>
+</body>
+</html>
